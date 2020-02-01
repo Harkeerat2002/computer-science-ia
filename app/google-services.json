@@ -1,34 +1,34 @@
 {
   "project_info": {
-    "project_number": "79518781657",
-    "firebase_url": "https://healthapp-2ba33.firebaseio.com",
-    "project_id": "healthapp-2ba33",
-    "storage_bucket": "healthapp-2ba33.appspot.com"
+    "project_number": "311045949997",
+    "firebase_url": "https://healthapp1-95d18.firebaseio.com",
+    "project_id": "healthapp1-95d18",
+    "storage_bucket": "healthapp1-95d18.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:79518781657:android:c6cd9679b9cc3915756ec8",
+        "mobilesdk_app_id": "1:311045949997:android:733043ec0f3137769946a4",
         "android_client_info": {
           "package_name": "com.school.comsciia.healthapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "79518781657-7gdep5nljv7ioieghk4hgqn19ggdjq74.apps.googleusercontent.com",
+          "client_id": "311045949997-atr1gh142kjjpg2cnq8cemgmb42d16ti.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBxO5WdS8rxLHBHRUpboqkXr-0d7Qjc_NE"
+          "current_key": "AIzaSyAZI9m4BCP7b63RYd5EL8R7lIsi0TS-uJ4"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "79518781657-7gdep5nljv7ioieghk4hgqn19ggdjq74.apps.googleusercontent.com",
+              "client_id": "311045949997-atr1gh142kjjpg2cnq8cemgmb42d16ti.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
