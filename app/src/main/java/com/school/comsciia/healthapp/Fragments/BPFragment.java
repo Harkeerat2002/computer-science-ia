@@ -1,10 +1,15 @@
 package com.school.comsciia.healthapp.Fragments;
 
+import android.Manifest;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +17,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -20,27 +30,33 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.school.comsciia.healthapp.Models.DateValue;
 import com.school.comsciia.healthapp.Models.User;
 import com.school.comsciia.healthapp.R;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link BPFragment.OnFragmentInteractionListener} interface
+ * {@link SugarFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link BPFragment#newInstance} factory method to
+ * Use the {@link SugarFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
 public class BPFragment extends Fragment {
 
-    private EditText userAge,userGender,userLanguage,userName;
+    private EditText bpValue;
     private Button saveBtn;
     private ProgressBar loadingProgress;
+    private LineChart lineChart;
+    LineDataSet lineDataSet = new LineDataSet(null, null);
+    ArrayList<ILineDataSet> iLineDataSets = new ArrayList<>();
+    LineData lineData;
 
     private OnFragmentInteractionListener mListener;
 
     public BPFragment() {
-        // Required empty public constructor
     }
 
     /**
@@ -66,30 +82,12 @@ public class BPFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_profile, container, false);
+        View view =  inflater.inflate(R.layout.fragment_bp, container, false);
 
-        userAge = (EditText) view.findViewById(R.id.regAge);
-        userGender = (EditText) view.findViewById(R.id.regGender);
-        userLanguage = (EditText) view.findViewById(R.id.regLanguage);
-        userName = (EditText) view.findViewById(R.id.regName);
+        bpValue = (EditText) view.findViewById(R.id.bpValue);
         saveBtn = view.findViewById(R.id.saveBtn);
         loadingProgress = view.findViewById(R.id.regProgressBar);
-
-        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference("Users");
-        databaseReference.child(FirebaseAuth.getInstance().getCurrentUser().getUid()).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot mainSnapshot) {
-
-                User userProfile = mainSnapshot.getValue(User.class);
-                userAge.setText(userProfile.age);
-                userGender.setText(userProfile.gender);
-                userLanguage.setText(userProfile.language);
-                userName.setText(userProfile.name);
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
+        lineChart = (LineChart) view.findViewById(R.id.lineChart);
 
         saveBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,15 +96,17 @@ public class BPFragment extends Fragment {
                 saveBtn.setVisibility(View.INVISIBLE);
                 loadingProgress.setVisibility(View.VISIBLE);
 
-                final String name = userName.getText().toString();
-                final String age = userAge.getText().toString();
-                final String gender = userGender.getText().toString();
-                final String language = userLanguage.getText().toString();
+                final String bp = bpValue.getText().toString();
 
-                UpdateUserAccount(name,age,gender,language);
+                SaveData(bp);
+                retriveData();
+                //((AppCompatActivity)getActivity()).getSupportActionBar().setTitle("Home");
+                //getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.container,new HomeFragment()).commit();
 
             }
         });
+
+        retriveData();
 
         return view;
     }
@@ -145,40 +145,63 @@ public class BPFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    private void UpdateUserAccount(final String name, final String age, final String gender, final String language) {
+    private void SaveData(final String bp) {
 
-        User user = new User(
-                age,
-                gender,
-                language,
-                name
-        );
+        DateValue value = new DateValue(bp);
 
-        FirebaseDatabase.getInstance().getReference("Users")
-                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                .setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                loadingProgress.setVisibility(View.GONE);
-                if (task.isSuccessful()) {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("BP")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
-                    // user account created successfully
-                    showMessage("Account created");
-                } else {
-                    //display a failure message
-                    // account creation failed
-                    showMessage("account creation failed" + task.getException().getMessage());
-                    saveBtn.setVisibility(View.VISIBLE);
-                    loadingProgress.setVisibility(View.INVISIBLE);
-                }
-            }
-        });
-
+        String id = ref.push().getKey();
+        ref.child(id).setValue(value);
+        showMessage("Value Saved");
+        saveBtn.setVisibility(View.VISIBLE);
+        loadingProgress.setVisibility(View.INVISIBLE);
     }
 
-    // simple method to show toast message
+    private void retriveData() {
+
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("BP")
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                ArrayList<Entry> dataVals = new ArrayList<>();
+
+                if(dataSnapshot.hasChildren()){
+                    for(DataSnapshot myDataSnapshot : dataSnapshot.getChildren()){
+                        DateValue value = myDataSnapshot.getValue(DateValue.class);
+                        dataVals.add(new Entry(value.date,Integer.parseInt(value.value)));
+                    }
+                }
+
+                showChart(dataVals);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void showChart(ArrayList<Entry> dataVals){
+        lineDataSet.setValues(dataVals);
+        lineDataSet.setLabel("BP Chart");
+        iLineDataSets.clear();
+        iLineDataSets.add(lineDataSet);
+        lineData = new LineData(iLineDataSets);
+        lineChart.clear();
+        lineChart.setData(lineData);
+        lineChart.invalidate();
+        lineChart.saveToGallery("BP.jpg");
+    }
+
+
+
+
     private void showMessage(String message) {
 
-        //Toast.makeText(getApplicationContext(),message,Toast.LENGTH_LONG).show();
     }
 }

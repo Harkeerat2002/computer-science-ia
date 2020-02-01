@@ -7,13 +7,13 @@
     tools:context="com.school.comsciia.healthapp.Fragments.ProfileFragment">
 
     <EditText
-        android:id="@+id/sugarValue"
+        android:id="@+id/weightValue"
         android:layout_width="265dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="56dp"
         android:background="@drawable/reg_edittext_style"
         android:ems="10"
-        android:hint="Sugar Value"
+        android:hint="Weight Value"
         android:inputType="textPersonName"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -50,7 +50,7 @@
         android:layout_marginBottom="136dp"
         android:background="@drawable/reg_edittext_style"
         android:ems="10"
-        android:hint="Sugar Value"
+        android:hint="Weight Value"
         android:inputType="textPersonName"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
